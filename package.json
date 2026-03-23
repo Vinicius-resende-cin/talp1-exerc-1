@@ -1,0 +1,19 @@
+{
+  "name": "test-management-system",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "sistema/backend",
+    "sistema/frontend",
+    "sistema/e2e"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace=sistema/backend",
+    "dev:frontend": "npm run dev --workspace=sistema/frontend",
+    "test:backend": "npm run test --workspace=sistema/backend",
+    "test:frontend": "npm run test --workspace=sistema/frontend",
+    "test:e2e": "npm run test --workspace=sistema/e2e",
+    "build:backend": "npm run build --workspace=sistema/backend",
+    "build:frontend": "npm run build --workspace=sistema/frontend"
+  }
+}
