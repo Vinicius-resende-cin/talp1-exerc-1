@@ -32,6 +32,30 @@ export const createExam = async (exam: {
   return res.json();
 };
 
+export const updateExam = async (
+  id: string,
+  exam: {
+    title: string;
+    questionIds: string[];
+    identifierType: "letters" | "powers_of_2";
+  },
+): Promise<Exam> => {
+  const res = await fetch(`/api/exams/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(exam),
+  });
+  if (!res.ok) throw new Error("Update exam failed");
+  return res.json();
+};
+
+export const deleteExam = async (id: string): Promise<void> => {
+  const res = await fetch(`/api/exams/${id}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error("Delete exam failed");
+};
+
 export const generateExamTests = async (
   examId: string,
   count: number,

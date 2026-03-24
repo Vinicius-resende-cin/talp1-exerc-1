@@ -8,6 +8,8 @@ import * as questionsApi from "../questions/api";
 vi.mock("./api", () => ({
   fetchExams: vi.fn(),
   createExam: vi.fn(),
+  updateExam: vi.fn(),
+  deleteExam: vi.fn(),
   generateExamTests: vi.fn(),
 }));
 

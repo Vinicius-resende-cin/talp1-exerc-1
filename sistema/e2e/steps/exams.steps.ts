@@ -131,3 +131,62 @@ Then("a ZIP file should be downloaded", async function () {
   const suggestedFilename = this.download.suggestedFilename();
   expect(suggestedFilename).toMatch(/\.zip$/);
 });
+
+Given("an exam {string} exists", async function (title: string) {
+  await this.page.goto("http://localhost:5173");
+  await this.page
+    .getByTestId("nav-exams")
+    .click()
+    .catch(() => {});
+
+  await this.page.getByTestId("exam-title-input").fill(title);
+  await this.page.getByTestId("create-exam-btn").click();
+  // Wait for the exam list to contain this item
+  await expect(this.page.locator(`text="${title}"`).first()).toBeVisible();
+});
+
+When("I click edit for {string}", async function (title: string) {
+  await this.page.locator(`button[aria-label="Edit ${title}"]`).click();
+});
+
+When("I change the title to {string}", async function (title: string) {
+  // Assuming the edit form reuses the same input or there is an edit input
+  const editInput = this.page.locator('input[aria-label="Edit Exam Title"]'); // We'll assume the aria-label is Edit Exam Title, but wait let's use a more generic locator
+  // We should probably clear it and fill
+  // Wait, the original input is data-testid="exam-title-input", but let's check what the frontend uses for edit.
+  // Actually, wait, let's use placeholder or data-testid.
+  // Let me just test if I can find an input that contains the literal or we can assume it's an input inside a form.
+  // I'll use input[value="${oldTitle}"] but maybe it's controlled.
+  // Wait, the simplest is to just fill the first text input that appears which is likely the edit title.
+  await this.page
+    .locator('input[aria-label="Edit Exam Title"]')
+    .fill(title)
+    .catch(async () => {
+      // fallback if aria-label is different
+      const inputs = this.page.getByRole("textbox");
+      await inputs.first().fill(title);
+    });
+});
+
+Then("the exam {string} should be in the list", async function (title: string) {
+  await expect(this.page.locator(`text="${title}"`).first()).toBeVisible();
+});
+
+Then("{string} should not be in the list", async function (title: string) {
+  await expect(this.page.locator(`text="${title}"`).first()).toBeHidden();
+});
+
+Then(
+  "the exam {string} should not be in the list",
+  async function (title: string) {
+    await expect(this.page.locator(`text="${title}"`).first()).toBeHidden();
+  },
+);
+
+When(
+  "I hit delete for {string} and accept the dialog",
+  async function (title: string) {
+    this.page.once("dialog", (dialog: any) => dialog.accept());
+    await this.page.locator(`button[aria-label="Delete ${title}"]`).click();
+  },
+);

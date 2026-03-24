@@ -34,3 +34,16 @@ Feature: Exam Management
     When I choose to generate 2 instances of the exam
     Then a ZIP file should be downloaded
 
+  Scenario: Edit an existing exam
+    Given an exam "Old Exam" exists
+    When I click edit for "Old Exam"
+    And I change the title to "New Exam"
+    And I save the exam
+    Then the exam "New Exam" should be in the list
+    And "Old Exam" should not be in the list
+
+  Scenario: Remove an exam
+    Given an exam "To Delete" exists
+    When I hit delete for "To Delete" and accept the dialog
+    Then the exam "To Delete" should not be in the list
+
