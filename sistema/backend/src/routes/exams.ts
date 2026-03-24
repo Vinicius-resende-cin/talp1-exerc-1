@@ -76,6 +76,57 @@ router.get("/:id", (req: Request, res: Response) => {
 });
 
 /**
+ * Handle PUT /api/exams/:id
+ */
+router.put("/:id", (req: Request, res: Response) => {
+  const examIndex = exams.findIndex((e) => e.id === req.params.id);
+  if (examIndex === -1) {
+    return res.status(404).json({ error: "Exam not found" });
+  }
+
+  const { title, questionIds, identifierType } = req.body;
+
+  if (
+    !title ||
+    !questionIds ||
+    !Array.isArray(questionIds) ||
+    !identifierType
+  ) {
+    return res.status(400).json({
+      error: "Missing required fields: title, questionIds, and identifierType.",
+    });
+  }
+
+  if (identifierType !== "letters" && identifierType !== "powers_of_2") {
+    return res.status(400).json({
+      error: "Invalid identifierType. Must be 'letters' or 'powers_of_2'.",
+    });
+  }
+
+  exams[examIndex] = {
+    ...exams[examIndex],
+    title,
+    questionIds,
+    identifierType,
+  };
+
+  res.status(200).json(exams[examIndex]);
+});
+
+/**
+ * Handle DELETE /api/exams/:id
+ */
+router.delete("/:id", (req: Request, res: Response) => {
+  const examIndex = exams.findIndex((e) => e.id === req.params.id);
+  if (examIndex === -1) {
+    return res.status(404).json({ error: "Exam not found" });
+  }
+
+  exams.splice(examIndex, 1);
+  res.status(204).send();
+});
+
+/**
  * Handle POST /api/exams/:id/generate
  */
 router.post("/:id/generate", (req: Request, res: Response) => {

@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { Exam, fetchExams, createExam, generateExamTests } from "./api";
+import {
+  Exam,
+  fetchExams,
+  createExam,
+  updateExam,
+  deleteExam,
+  generateExamTests,
+} from "./api";
 import { Question, fetchQuestions } from "../questions/api";
 
 export function ExamsPage() {
@@ -14,6 +21,7 @@ export function ExamsPage() {
   const [identifierType, setIdentifierType] = useState<
     "letters" | "powers_of_2"
   >("letters");
+  const [editingExamId, setEditingExamId] = useState<string | null>(null);
 
   const loadData = async () => {
     const [examsData, questionsData] = await Promise.all([
@@ -46,12 +54,31 @@ export function ExamsPage() {
       identifierType,
     };
 
-    await createExam(payload);
+    if (editingExamId) {
+      await updateExam(editingExamId, payload);
+    } else {
+      await createExam(payload);
+    }
 
     setTitle("");
     setSelectedQuestions(new Set());
     setIdentifierType("letters");
+    setEditingExamId(null);
     await loadData();
+  };
+
+  const handleEdit = (exam: Exam) => {
+    setTitle(exam.title);
+    setIdentifierType(exam.identifierType);
+    setSelectedQuestions(new Set(exam.questions.map((q) => q.id)));
+    setEditingExamId(exam.id);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this exam?")) {
+      await deleteExam(id);
+      await loadData();
+    }
   };
 
   return (
@@ -73,7 +100,9 @@ export function ExamsPage() {
           marginBottom: "2rem",
         }}
       >
-        <h2 data-testid="exam-form-title">Create New Exam</h2>
+        <h2 data-testid="exam-form-title">
+          {editingExamId ? "Edit Exam" : "Create New Exam"}
+        </h2>
         <form onSubmit={handleSubmit} data-testid="exam-form">
           <div style={{ marginBottom: "1rem" }}>
             <label
@@ -187,10 +216,32 @@ export function ExamsPage() {
               border: "none",
               borderRadius: "4px",
               cursor: "pointer",
+              marginRight: "1rem",
             }}
           >
-            Create Exam
+            {editingExamId ? "Update Exam" : "Create Exam"}
           </button>
+          {editingExamId && (
+            <button
+              type="button"
+              onClick={() => {
+                setEditingExamId(null);
+                setTitle("");
+                setSelectedQuestions(new Set());
+                setIdentifierType("letters");
+              }}
+              style={{
+                background: "#ccc",
+                color: "black",
+                padding: "0.5rem 1rem",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
+            >
+              Cancel
+            </button>
+          )}
         </form>
       </div>
 
@@ -212,7 +263,47 @@ export function ExamsPage() {
                   background: "#fff",
                 }}
               >
-                <h3 style={{ margin: "0 0 0.5rem 0" }}>{exam.title}</h3>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <h3 style={{ margin: "0 0 0.5rem 0" }}>{exam.title}</h3>
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <button
+                      aria-label={`Edit ${exam.title}`}
+                      data-testid={`edit-btn-${exam.id}`}
+                      onClick={() => handleEdit(exam)}
+                      style={{
+                        background: "#f0ad4e",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        padding: "0.25rem 0.5rem",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      aria-label={`Delete ${exam.title}`}
+                      data-testid={`delete-btn-${exam.id}`}
+                      onClick={() => handleDelete(exam.id)}
+                      style={{
+                        background: "#d9534f",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        padding: "0.25rem 0.5rem",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
                 <p
                   style={{
                     margin: "0 0 0.5rem 0",

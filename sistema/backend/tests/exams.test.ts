@@ -82,4 +82,95 @@ describe("Exams API", () => {
     expect(getResponse.body.title).toBe(createPayload.title);
     expect(getResponse.body.identifierType).toBe(createPayload.identifierType);
   });
+
+  describe("Update Exam (PUT /api/exams/:id)", () => {
+    it("should update an existing exam", async () => {
+      const createResponse = await request(app)
+        .post("/api/exams")
+        .send({
+          title: "Exam to Update",
+          questionIds: ["q1"],
+          identifierType: "letters",
+        })
+        .expect(201);
+
+      const examId = createResponse.body.id;
+
+      const updateResponse = await request(app)
+        .put(`/api/exams/${examId}`)
+        .send({
+          title: "Updated Exam Title",
+          questionIds: ["q1", "q2"],
+          identifierType: "powers_of_2",
+        })
+        .expect(200);
+
+      expect(updateResponse.body.title).toBe("Updated Exam Title");
+      expect(updateResponse.body.questionIds).toEqual(["q1", "q2"]);
+      expect(updateResponse.body.identifierType).toBe("powers_of_2");
+    });
+
+    it("should return 400 for invalid request body during update", async () => {
+      const createResponse = await request(app)
+        .post("/api/exams")
+        .send({
+          title: "Exam to Fail Update",
+          questionIds: ["q1"],
+          identifierType: "letters",
+        })
+        .expect(201);
+
+      const examId = createResponse.body.id;
+
+      await request(app)
+        .put(`/api/exams/${examId}`)
+        .send({
+          title: "Missing Fields",
+        })
+        .expect(400);
+
+      await request(app)
+        .put(`/api/exams/${examId}`)
+        .send({
+          title: "Invalid Type",
+          questionIds: ["q1"],
+          identifierType: "invalid_type",
+        })
+        .expect(400);
+    });
+
+    it("should return 404 when updating a non-existent exam", async () => {
+      await request(app)
+        .put("/api/exams/invalid-id-123")
+        .send({
+          title: "Non-existent",
+          questionIds: ["q1"],
+          identifierType: "letters",
+        })
+        .expect(404);
+    });
+  });
+
+  describe("Delete Exam (DELETE /api/exams/:id)", () => {
+    it("should delete an existing exam", async () => {
+      const createResponse = await request(app)
+        .post("/api/exams")
+        .send({
+          title: "Exam to Delete",
+          questionIds: ["q1"],
+          identifierType: "letters",
+        })
+        .expect(201);
+
+      const examId = createResponse.body.id;
+
+      await request(app).delete(`/api/exams/${examId}`).expect(204);
+
+      await request(app).get(`/api/exams/${examId}`).expect(404);
+    });
+
+    it("should return 404 when deleting a non-existent exam", async () => {
+      await request(app).delete("/api/exams/invalid-id-456").expect(404);
+    });
+  });
 });
