@@ -1,0 +1,48 @@
+name: Checks and Tests
+
+on:
+  pull_request:
+    branches: [ master ]
+  push:
+    branches: [ master ]
+
+jobs:
+  test:
+    name: Run Unit and E2E Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Clean Install Dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Backend Unit Tests
+        run: npm run test:backend
+
+      - name: Run Frontend Unit Tests
+        run: npm run test:frontend
+        env:
+          CI: true
+
+      - name: Start Background Services
+        run: |
+          npm run dev:backend &
+          npm run dev:frontend &
+        env:
+          CI: true
+
+      - name: Wait for Services to be Ready
+        run: npx wait-on http://localhost:3000/api/exams http://localhost:5173
+
+      - name: Run End-to-End Tests
+        run: npm run test:e2e
