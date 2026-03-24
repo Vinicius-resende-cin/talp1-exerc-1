@@ -15,5 +15,13 @@
     "test:e2e": "npm run test --workspace=sistema/e2e",
     "build:backend": "npm run build --workspace=sistema/backend",
     "build:frontend": "npm run build --workspace=sistema/frontend"
+  },
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "pdfkit": "^0.18.0"
+  },
+  "devDependencies": {
+    "@types/archiver": "^7.0.0",
+    "@types/pdfkit": "^0.17.5"
   }
 }
