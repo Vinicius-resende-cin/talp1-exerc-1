@@ -11,6 +11,7 @@ Feature: Exam Management
     When I create a new exam with title "Math Test 1"
     And I select questions "1" and "2"
     And I set the identifier type to "letters"
+    And I save the exam
     Then the exam should be successfully created
     And the exam preview should display options as "a, b, c..."
     And the exam should have a space for the student to answer with the selected letters
@@ -23,6 +24,7 @@ Feature: Exam Management
     When I create a new exam with title "Physics and Math"
     And I select questions "3" and "4"
     And I set the identifier type to "powers_of_2"
+    And I save the exam
     Then the exam should be successfully created
     And the exam preview should display options as "1, 2, 4, 8..."
     And the exam should have a space for the student to answer with the sum of the selected numbers

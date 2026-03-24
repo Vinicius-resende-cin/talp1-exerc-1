@@ -45,14 +45,28 @@ When("I set the title as {string}", async function (title: string) {
   await this.page.getByTestId("exam-title-input").fill(title);
 });
 
-Then("the exam should be successfully created", async function () {
+When("I save the exam", async function () {
   await this.page.getByTestId("create-exam-btn").click();
-  await this.page.waitForTimeout(500);
+});
+
+Then("the exam should be successfully created", async function () {
+  // Wait for the exam list to contain at least one item
+  await this.page.waitForSelector('li[data-testid^="exam-item-"]');
+  const count = await this.page.locator('li[data-testid^="exam-item-"]').count();
+  expect(count).toBeGreaterThan(0);
 });
 
 Then(
   "the exam preview should display options as {string}",
-  async function (previewText: string) {},
+  async function (previewText: string) {
+    if (previewText === "a, b, c...") {
+      const isVisible = await this.page.locator('text="Identifier Type: Letters"').first().isVisible();
+      expect(isVisible).toBe(true);
+    } else {
+      const isVisible = await this.page.locator('text="Identifier Type: Powers of 2"').first().isVisible();
+      expect(isVisible).toBe(true);
+    }
+  },
 );
 
 Then(
