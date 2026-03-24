@@ -49,6 +49,24 @@ export const updateExam = async (
   return res.json();
 };
 
+export const gradeExam = async (
+  examId: string,
+  testNumber: number,
+  answers: Record<string, string>,
+): Promise<{
+  totalQuestions: number;
+  correctAnswers: number;
+  score: number;
+}> => {
+  const res = await fetch(`/api/exams/${examId}/grade`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ testNumber, answers }),
+  });
+  if (!res.ok) throw new Error("Grade exam failed");
+  return res.json();
+};
+
 export const deleteExam = async (id: string): Promise<void> => {
   const res = await fetch(`/api/exams/${id}`, {
     method: "DELETE",

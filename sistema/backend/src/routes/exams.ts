@@ -10,6 +10,7 @@ export interface Exam {
   title: string;
   questionIds: string[];
   identifierType: "letters" | "powers_of_2";
+  instances?: Record<number, Record<number, string>>;
 }
 
 /**
@@ -151,10 +152,13 @@ router.post("/:id/generate", (req: Request, res: Response) => {
   archive.pipe(res);
 
   let csvRows = ["Test Number,Question,Correct Answer"];
+  exam.instances = exam.instances || {};
 
   for (let testNum = 1; testNum <= count; testNum++) {
     const doc = new PDFDocument();
     archive.append(doc as any, { name: `Test_${testNum}.pdf` });
+
+    exam.instances[testNum] = {};
 
     // Shuffle questions
     const shuffledQuestionIds = [...exam.questionIds].sort(
@@ -195,6 +199,7 @@ router.post("/:id/generate", (req: Request, res: Response) => {
         doc.fontSize(12).text(`  ${identifier}) ${alt.description}`);
       });
 
+      exam.instances![testNum][qIndex + 1] = correctAnswerKey;
       doc.moveDown();
       csvRows.push(`${testNum},${qIndex + 1},${correctAnswerKey}`);
     });
@@ -204,6 +209,48 @@ router.post("/:id/generate", (req: Request, res: Response) => {
 
   archive.append(csvRows.join("\n"), { name: "answers.csv" });
   archive.finalize();
+});
+
+/**
+ * Handle POST /api/exams/:id/grade
+ */
+router.post("/:id/grade", (req: Request, res: Response) => {
+  const exam = exams.find((e) => e.id === req.params.id);
+  if (!exam) {
+    return res.status(404).json({ error: "Exam not found" });
+  }
+
+  const { testNumber, answers } = req.body;
+  if (testNumber === undefined || !answers || typeof answers !== "object") {
+    return res
+      .status(400)
+      .json({ error: "Missing or invalid testNumber or answers" });
+  }
+
+  if (!exam.instances || !exam.instances[testNumber]) {
+    return res
+      .status(404)
+      .json({ error: "Exam instance not found for the given test number" });
+  }
+
+  const correctAnswers = exam.instances[testNumber];
+  const totalQuestions = Object.keys(correctAnswers).length;
+  let correctCount = 0;
+
+  for (const qNum of Object.keys(correctAnswers)) {
+    const questionNumber = Number(qNum);
+    if (answers[questionNumber] === correctAnswers[questionNumber]) {
+      correctCount++;
+    }
+  }
+
+  const score = totalQuestions > 0 ? (correctCount / totalQuestions) * 100 : 0;
+
+  res.status(200).json({
+    totalQuestions,
+    correctAnswers: correctCount,
+    score,
+  });
 });
 
 export default router;
