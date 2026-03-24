@@ -12,7 +12,6 @@ export function QuestionsPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // Form State
   const [description, setDescription] = useState("");
   const [alternatives, setAlternatives] = useState<Alternative[]>([
     { description: "", isCorrect: false },

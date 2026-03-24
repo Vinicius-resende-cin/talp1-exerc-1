@@ -37,7 +37,6 @@ describe("ExamsPage", () => {
 
     render(<ExamsPage />);
 
-    // Wait for the exam to be visible
     await waitFor(() => {
       expect(screen.getByTestId("exam-item-exam-123")).toBeInTheDocument();
     });
@@ -73,11 +72,9 @@ describe("ExamsPage", () => {
     const generateCount = screen.getByTestId("generate-count-exam-123");
     const generateBtn = screen.getByTestId("generate-btn-exam-123");
 
-    // Change input
     await user.clear(generateCount);
     await user.type(generateCount, "3");
 
-    // Click button
     await user.click(generateBtn);
 
     expect(api.generateExamTests).toHaveBeenCalledWith("exam-123", 3);

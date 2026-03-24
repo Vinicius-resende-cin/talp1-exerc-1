@@ -13,7 +13,6 @@ export function ExamsPage() {
   const [exams, setExams] = useState<Exam[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
 
-  // Form State
   const [title, setTitle] = useState("");
   const [selectedQuestions, setSelectedQuestions] = useState<Set<string>>(
     new Set(),
