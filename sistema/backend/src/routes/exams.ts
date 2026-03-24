@@ -21,7 +21,13 @@ export let exams: Exam[] = [];
  * Handle GET /api/exams
  */
 router.get("/", (req: Request, res: Response) => {
-  res.status(200).json(exams);
+  const populatedExams = exams.map((exam) => ({
+    ...exam,
+    questions: exam.questionIds
+      .map((qId) => questions.find((q) => q.id === qId))
+      .filter(Boolean),
+  }));
+  res.status(200).json(populatedExams);
 });
 
 /**
