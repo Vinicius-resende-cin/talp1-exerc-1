@@ -18,7 +18,7 @@ export interface Question {
 
 /**
  * Fetches all questions from the API.
- * 
+ *
  * @returns {Promise<Question[]>} A promise that resolves to an array of questions.
  */
 export const fetchQuestions = async (): Promise<Question[]> => {
@@ -34,7 +34,7 @@ export const fetchQuestions = async (): Promise<Question[]> => {
 
 /**
  * Creates a new question via the API.
- * 
+ *
  * @param {Omit<Question, "id">} q - The question data to create, omitting the ID.
  * @returns {Promise<Question>} A promise that resolves to the created question.
  */
@@ -52,7 +52,7 @@ export const createQuestion = async (
 
 /**
  * Updates an existing question via the API.
- * 
+ *
  * @param {string} id - The ID of the question to update.
  * @param {Omit<Question, "id">} q - The updated question data.
  * @returns {Promise<Question>} A promise that resolves to the updated question.
@@ -72,7 +72,7 @@ export const updateQuestion = async (
 
 /**
  * Deletes a question via the API.
- * 
+ *
  * @param {string} id - The ID of the question to delete.
  */
 export const deleteQuestion = async (id: string): Promise<void> => {
