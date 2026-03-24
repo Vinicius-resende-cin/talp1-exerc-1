@@ -1,5 +1,11 @@
-import { Before, After, BeforeAll, AfterAll, setDefaultTimeout } from '@cucumber/cucumber';
-import { chromium, Browser, Page, BrowserContext } from '@playwright/test';
+import {
+  Before,
+  After,
+  BeforeAll,
+  AfterAll,
+  setDefaultTimeout,
+} from "@cucumber/cucumber";
+import { chromium, Browser, Page, BrowserContext } from "@playwright/test";
 
 // Set a longer timeout for E2E tests (60 seconds)
 setDefaultTimeout(60 * 1000);
