@@ -31,3 +31,26 @@ export const createExam = async (exam: {
   if (!res.ok) throw new Error("Create exam failed");
   return res.json();
 };
+
+export const generateExamTests = async (
+  examId: string,
+  count: number,
+): Promise<void> => {
+  const res = await fetch(`/api/exams/${examId}/generate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ count }),
+  });
+
+  if (!res.ok) throw new Error("Failed to generate tests");
+
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `exam_${examId}_tests.zip`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+};

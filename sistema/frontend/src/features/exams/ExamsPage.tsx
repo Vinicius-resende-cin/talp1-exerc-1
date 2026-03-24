@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Exam, fetchExams, createExam } from "./api";
+import { Exam, fetchExams, createExam, generateExamTests } from "./api";
 import { Question, fetchQuestions } from "../questions/api";
 
 export function ExamsPage() {
@@ -243,6 +243,52 @@ export function ExamsPage() {
                       No questions assigned.
                     </p>
                   )}
+                </div>
+
+                <div
+                  style={{
+                    marginTop: "1rem",
+                    display: "flex",
+                    gap: "0.5rem",
+                    alignItems: "center",
+                  }}
+                >
+                  <label htmlFor={`generate-count-${exam.id}`}>
+                    Copies to Generate:
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    defaultValue={1}
+                    id={`generate-count-${exam.id}`}
+                    data-testid={`generate-count-${exam.id}`}
+                    style={{
+                      width: "60px",
+                      padding: "0.25rem",
+                      borderRadius: "4px",
+                      border: "1px solid #ccc",
+                    }}
+                  />
+                  <button
+                    data-testid={`generate-btn-${exam.id}`}
+                    onClick={() => {
+                      const countInput = document.getElementById(
+                        `generate-count-${exam.id}`,
+                      ) as HTMLInputElement;
+                      const count = parseInt(countInput.value, 10) || 1;
+                      generateExamTests(exam.id, count).catch(console.error);
+                    }}
+                    style={{
+                      background: "#007BFF",
+                      color: "white",
+                      padding: "0.25rem 0.5rem",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Generate
+                  </button>
                 </div>
               </li>
             ))}

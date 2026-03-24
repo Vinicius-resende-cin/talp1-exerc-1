@@ -19,7 +19,7 @@ export interface Question {
   alternatives: Alternative[];
 }
 
-let questions: Question[] = [];
+export let questions: Question[] = [];
 
 /**
  * Create a new Question.

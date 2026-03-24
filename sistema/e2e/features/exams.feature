@@ -28,3 +28,9 @@ Feature: Exam Management
     Then the exam should be successfully created
     And the exam preview should display options as "1, 2, 4, 8..."
     And the exam should have a space for the student to answer with the sum of the selected numbers
+
+  Scenario: Generate test instances
+    Given an exam exists
+    When I choose to generate 2 instances of the exam
+    Then a ZIP file should be downloaded
+
