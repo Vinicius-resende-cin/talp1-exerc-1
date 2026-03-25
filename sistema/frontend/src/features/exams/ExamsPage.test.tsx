@@ -27,7 +27,14 @@ describe("ExamsPage", () => {
       {
         id: "exam-123",
         title: "Test Exam 1",
-        questions: [{ id: "q1", description: "Q1 desc" }],
+        questions: [
+          {
+            id: "q1",
+            description: "Q1 desc",
+            alternatives: [],
+            difficulty: "easy" as const,
+          },
+        ],
         identifierType: "letters" as const,
       },
     ];
