@@ -17,6 +17,7 @@ describe("GradingPage", () => {
     const mockGrades = {
       examId: "exam-123",
       grades: { student1: 10, student2: 8 },
+      details: [],
     };
     vi.mocked(api.gradeCsv).mockResolvedValue(mockGrades);
 

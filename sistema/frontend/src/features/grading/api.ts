@@ -22,5 +22,12 @@ export const gradeCsv = async (
   return res.json() as Promise<{
     examId: string;
     grades: Record<string, number>;
+    details: Array<{
+      student: string;
+      question: string;
+      expected: string;
+      answer: string;
+      score: number;
+    }>;
   }>;
 };

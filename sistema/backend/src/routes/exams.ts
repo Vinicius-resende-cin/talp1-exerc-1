@@ -3,6 +3,7 @@ import PDFDocument from "pdfkit";
 import archiver from "archiver";
 import multer from "multer";
 import Papa from "papaparse";
+import { v4 as uuidv4 } from "uuid";
 import { questions } from "./questions";
 
 const router = Router();
@@ -72,6 +73,7 @@ router.post(
       const studentData = studentParsed.data as any[];
 
       const studentGrades: { [studentName: string]: number } = {};
+      const studentDetails: Array<{ student: string, question: string, expected: string, answer: string, score: number }> = [];
 
       studentData.forEach((row) => {
         const student = row.Student?.trim();
@@ -91,13 +93,15 @@ router.post(
         const correctArr = correctMap.get(question);
         if (!correctArr) return;
 
+        let score = 0;
+
         if (exam.identifierType === "powers_of_2") {
           const expectedSum = parseInt(correctArr[0], 10) || 0;
           const studentAnsSum = parseInt(answerRaw, 10) || 0;
 
           if (rigor === "high") {
             if (expectedSum === studentAnsSum) {
-              studentGrades[student] += 1;
+              score = 1;
             }
           } else {
             let correctSelections = 0;
@@ -119,7 +123,7 @@ router.post(
 
             if (totalCorrectOptions > 0) {
               const partial = (correctSelections - incorrectSelections) / totalCorrectOptions;
-              studentGrades[student] += partial > 0 ? partial : 0;
+              score = partial > 0 ? partial : 0;
             }
           }
         } else {
@@ -127,7 +131,7 @@ router.post(
             const sortCorrect = [...correctArr].sort().join(",");
             const sortStudent = [...answerArr].sort().join(",");
             if (sortCorrect === sortStudent) {
-              studentGrades[student] += 1;
+              score = 1;
             }
           } else {
             let correctSelections = 0;
@@ -142,15 +146,24 @@ router.post(
               else if (!isCorrect && !isSelected) correctNonSelections++;
             });
 
-            studentGrades[student] +=
-              (correctSelections + correctNonSelections) / 5;
+            score = (correctSelections + correctNonSelections) / 5;
           }
         }
+
+        studentGrades[student] += score;
+        studentDetails.push({
+          student,
+          question,
+          expected: correctArr.join(","),
+          answer: answerRaw,
+          score,
+        });
       });
 
       res.status(200).json({
         examId,
         grades: studentGrades,
+        details: studentDetails,
       });
     } catch (err) {
       console.error(err);
@@ -292,16 +305,32 @@ router.post("/:id/generate", (req: Request, res: Response) => {
   const archive = archiver("zip", { zlib: { level: 9 } });
   archive.pipe(res);
 
-  let csvRows = ["Test Number,Question,Correct Answer"];
+  let csvRows = ["Test Number,Test ID,Question,Correct Answer"];
 
   for (let testNum = 1; testNum <= count; testNum++) {
-    const doc = new PDFDocument();
+    const doc = new PDFDocument({ bufferPages: true });
+    
+    const testId = uuidv4();
+
     archive.append(doc as any, { name: `Test_${testNum}.pdf` });
 
     // Shuffle questions
     const shuffledQuestionIds = [...exam.questionIds].sort(
       () => Math.random() - 0.5,
     );
+
+    // Footer with Test ID
+    const addFooter = () => {
+      const range = doc.bufferedPageRange();
+      for (let i = range.start; i < range.start + range.count; i++) {
+        doc.switchToPage(i);
+        doc.fontSize(10).text(`Test ID: ${testId}`, 0, doc.page.height - 50, {
+          align: 'center',
+          width: doc.page.width,
+          lineBreak: false,
+        });
+      }
+    };
 
     doc
       .fontSize(16)
@@ -340,12 +369,13 @@ router.post("/:id/generate", (req: Request, res: Response) => {
       doc.moveDown();
       if (exam.identifierType === "powers_of_2") {
         const sum = correctAnswerKeys.reduce((acc, val) => acc + parseInt(val, 10), 0);
-        csvRows.push(`${testNum},${qIndex + 1},${sum}`);
+        csvRows.push(`${testNum},${testId},${qIndex + 1},${sum}`);
       } else {
-        csvRows.push(`${testNum},${qIndex + 1},"${correctAnswerKeys.join(",")}"`);
+        csvRows.push(`${testNum},${testId},${qIndex + 1},"${correctAnswerKeys.join(",")}"`);
       }
     });
 
+    addFooter();
     doc.end();
   }
 
