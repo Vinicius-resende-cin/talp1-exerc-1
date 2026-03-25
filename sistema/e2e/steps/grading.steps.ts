@@ -1,0 +1,87 @@
+import { Given, When, Then } from "@cucumber/cucumber";
+import { expect } from "@playwright/test";
+import * as fs from "fs";
+import * as path from "path";
+
+Given("I navigate to the Grading page", async function () {
+  await this.page.goto("http://localhost:5173/");
+  await this.page.click('[data-testid="nav-grading"]');
+});
+
+When("I fill in the exam ID {string}", async function (examId: string) {
+  await this.page.fill("input#examId", examId);
+});
+
+When(
+  "I upload the correct answers CSV with high rigor mock data",
+  async function () {
+    const fixturesDir = path.join(__dirname, "..", "fixtures");
+    if (!fs.existsSync(fixturesDir))
+      fs.mkdirSync(fixturesDir, { recursive: true });
+    const filePath = path.join(fixturesDir, "correct_high.csv");
+    fs.writeFileSync(filePath, "questionId,correctAnswer,weight\nQ1,A,10\n");
+    await this.page.setInputFiles("input#correctCsv", filePath);
+  },
+);
+
+When(
+  "I upload the student answers CSV with high rigor mock data",
+  async function () {
+    const fixturesDir = path.join(__dirname, "..", "fixtures");
+    if (!fs.existsSync(fixturesDir))
+      fs.mkdirSync(fixturesDir, { recursive: true });
+    const filePath = path.join(fixturesDir, "student_high.csv");
+    fs.writeFileSync(filePath, "studentName,Q1\nAlice,A\nBob,B\n");
+    await this.page.setInputFiles("input#studentCsv", filePath);
+  },
+);
+
+When(
+  "I upload the correct answers CSV with low rigor mock data",
+  async function () {
+    const fixturesDir = path.join(__dirname, "..", "fixtures");
+    if (!fs.existsSync(fixturesDir))
+      fs.mkdirSync(fixturesDir, { recursive: true });
+    const filePath = path.join(fixturesDir, "correct_low.csv");
+    fs.writeFileSync(filePath, "questionId,correctAnswer,weight\nQ1,A,10\n");
+    await this.page.setInputFiles("input#correctCsv", filePath);
+  },
+);
+
+When(
+  "I upload the student answers CSV with low rigor mock data",
+  async function () {
+    const fixturesDir = path.join(__dirname, "..", "fixtures");
+    if (!fs.existsSync(fixturesDir))
+      fs.mkdirSync(fixturesDir, { recursive: true });
+    const filePath = path.join(fixturesDir, "student_low.csv");
+    fs.writeFileSync(filePath, "studentName,Q1\nAlice,A\nBob,B\n");
+    await this.page.setInputFiles("input#studentCsv", filePath);
+  },
+);
+
+When("I select {string} rigor", async function (rigorLevel: string) {
+  await this.page.selectOption("select#rigor", rigorLevel);
+});
+
+When("I click {string}", async function (buttonText: string) {
+  // Use a more specific locator or robust wait
+  await this.page.locator(`button`, { hasText: buttonText }).click();
+});
+
+Then(
+  "I should see the grades table with {string} getting {string}",
+  async function (studentName: string, grade: string) {
+    // Wait for Results specifically to ensure API roundtrip
+    await this.page.waitForSelector(`h3:has-text("Results for Exam:")`);
+
+    const rowLocator = this.page.locator(
+      `tr:has(td:text-is("${studentName}"))`,
+    );
+    await rowLocator.waitFor({ state: "visible" });
+
+    const text = await rowLocator.innerText();
+    expect(text).toContain(studentName);
+    expect(text).toContain(grade);
+  },
+);
