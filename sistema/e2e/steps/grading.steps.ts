@@ -19,7 +19,7 @@ When(
     if (!fs.existsSync(fixturesDir))
       fs.mkdirSync(fixturesDir, { recursive: true });
     const filePath = path.join(fixturesDir, "correct_high.csv");
-    fs.writeFileSync(filePath, "questionId,correctAnswer,weight\nQ1,A,10\n");
+    fs.writeFileSync(filePath, "Question,Correct\nQ1,A\n");
     await this.page.setInputFiles("input#correctCsv", filePath);
   },
 );
@@ -31,7 +31,7 @@ When(
     if (!fs.existsSync(fixturesDir))
       fs.mkdirSync(fixturesDir, { recursive: true });
     const filePath = path.join(fixturesDir, "student_high.csv");
-    fs.writeFileSync(filePath, "studentName,Q1\nAlice,A\nBob,B\n");
+    fs.writeFileSync(filePath, "Student,Question,Answer\nAlice,Q1,A\nBob,Q1,B\n");
     await this.page.setInputFiles("input#studentCsv", filePath);
   },
 );
@@ -43,7 +43,7 @@ When(
     if (!fs.existsSync(fixturesDir))
       fs.mkdirSync(fixturesDir, { recursive: true });
     const filePath = path.join(fixturesDir, "correct_low.csv");
-    fs.writeFileSync(filePath, "questionId,correctAnswer,weight\nQ1,A,10\n");
+    fs.writeFileSync(filePath, "Question,Correct\nQ1,A\n");
     await this.page.setInputFiles("input#correctCsv", filePath);
   },
 );
@@ -55,7 +55,7 @@ When(
     if (!fs.existsSync(fixturesDir))
       fs.mkdirSync(fixturesDir, { recursive: true });
     const filePath = path.join(fixturesDir, "student_low.csv");
-    fs.writeFileSync(filePath, "studentName,Q1\nAlice,A\nBob,B\n");
+    fs.writeFileSync(filePath, "Student,Question,Answer\nAlice,Q1,A\nBob,Q1,B\n");
     await this.page.setInputFiles("input#studentCsv", filePath);
   },
 );
