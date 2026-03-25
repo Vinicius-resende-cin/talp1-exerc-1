@@ -32,6 +32,10 @@ router.post(
   (req: Request, res: Response): any => {
     try {
       const examId = req.params.id;
+      const exam = exams.find((e) => e.id === examId);
+      if (!exam) {
+        return res.status(404).json({ error: "Exam not found" });
+      }
       const rigor = req.body.rigor;
 
       if (rigor !== "high" && rigor !== "low") {
@@ -87,27 +91,53 @@ router.post(
         const correctArr = correctMap.get(question);
         if (!correctArr) return;
 
-        if (rigor === "high") {
-          const sortCorrect = [...correctArr].sort().join(",");
-          const sortStudent = [...answerArr].sort().join(",");
-          if (sortCorrect === sortStudent) {
-            studentGrades[student] += 1;
+        if (exam.identifierType === "powers_of_2") {
+          const expectedSum = parseInt(correctArr[0], 10) || 0;
+          const studentAnsSum = parseInt(answerRaw, 10) || 0;
+
+          if (rigor === "high") {
+            if (expectedSum === studentAnsSum) {
+              studentGrades[student] += 1;
+            }
+          } else {
+            let correctSelections = 0;
+            let correctNonSelections = 0;
+            const allOptionsPow = [1, 2, 4, 8, 16];
+
+            allOptionsPow.forEach((pow) => {
+              const expectedHasOpt = (expectedSum & pow) === pow;
+              const studentHasOpt = (studentAnsSum & pow) === pow;
+
+              if (expectedHasOpt && studentHasOpt) correctSelections++;
+              else if (!expectedHasOpt && !studentHasOpt) correctNonSelections++;
+            });
+
+            studentGrades[student] +=
+              (correctSelections + correctNonSelections) / 5;
           }
         } else {
-          let correctSelections = 0;
-          let correctNonSelections = 0;
-          const allOptions = ["A", "B", "C", "D", "E"];
+          if (rigor === "high") {
+            const sortCorrect = [...correctArr].sort().join(",");
+            const sortStudent = [...answerArr].sort().join(",");
+            if (sortCorrect === sortStudent) {
+              studentGrades[student] += 1;
+            }
+          } else {
+            let correctSelections = 0;
+            let correctNonSelections = 0;
+            const allOptions = ["A", "B", "C", "D", "E"];
 
-          allOptions.forEach((opt) => {
-            const isCorrect = correctArr.includes(opt);
-            const isSelected = answerArr.includes(opt);
+            allOptions.forEach((opt) => {
+              const isCorrect = correctArr.includes(opt);
+              const isSelected = answerArr.includes(opt);
 
-            if (isCorrect && isSelected) correctSelections++;
-            else if (!isCorrect && !isSelected) correctNonSelections++;
-          });
+              if (isCorrect && isSelected) correctSelections++;
+              else if (!isCorrect && !isSelected) correctNonSelections++;
+            });
 
-          studentGrades[student] +=
-            (correctSelections + correctNonSelections) / 5;
+            studentGrades[student] +=
+              (correctSelections + correctNonSelections) / 5;
+          }
         }
       });
 
@@ -301,7 +331,12 @@ router.post("/:id/generate", (req: Request, res: Response) => {
       });
 
       doc.moveDown();
-      csvRows.push(`${testNum},${qIndex + 1},"${correctAnswerKeys.join(",")}"`);
+      if (exam.identifierType === "powers_of_2") {
+        const sum = correctAnswerKeys.reduce((acc, val) => acc + parseInt(val, 10), 0);
+        csvRows.push(`${testNum},${qIndex + 1},${sum}`);
+      } else {
+        csvRows.push(`${testNum},${qIndex + 1},"${correctAnswerKeys.join(",")}"`);
+      }
     });
 
     doc.end();

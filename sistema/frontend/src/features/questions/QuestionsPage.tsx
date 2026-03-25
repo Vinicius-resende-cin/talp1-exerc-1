@@ -16,6 +16,7 @@ export function QuestionsPage() {
   const [alternatives, setAlternatives] = useState<Alternative[]>([
     { description: "", isCorrect: false },
   ]);
+  const [error, setError] = useState<string | null>(null);
 
   const loadQuestions = async () => {
     const data = await fetchQuestions();
@@ -63,6 +64,11 @@ export function QuestionsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!alternatives.some((a) => a.isCorrect)) {
+      setError("Please select at least one correct alternative.");
+      return;
+    }
+    setError(null);
     const payload = { description, alternatives };
 
     if (editingId) {
@@ -81,6 +87,7 @@ export function QuestionsPage() {
     setEditingId(null);
     setDescription("");
     setAlternatives([{ description: "", isCorrect: false }]);
+    setError(null);
   };
 
   return (
@@ -105,6 +112,20 @@ export function QuestionsPage() {
         <h2 data-testid="form-title">
           {editingId ? "Edit Question" : "Add New Question"}
         </h2>
+        {error && (
+          <div
+            style={{
+              padding: "0.75rem",
+              background: "#ffebee",
+              color: "#c62828",
+              marginBottom: "1rem",
+              borderRadius: "4px",
+              border: "1px solid #ef9a9a",
+            }}
+          >
+            {error}
+          </div>
+        )}
         <form onSubmit={handleSubmit} data-testid="question-form">
           <div style={{ marginBottom: "1rem" }}>
             <label
