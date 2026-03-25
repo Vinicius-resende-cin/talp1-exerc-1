@@ -5,8 +5,8 @@ export const gradeCsv = async (
   rigor: "high" | "low",
 ) => {
   const formData = new FormData();
-  formData.append("correctCsv", correctCsv);
-  formData.append("studentCsv", studentCsv);
+  formData.append("correctAnswers", correctCsv);
+  formData.append("studentAnswers", studentCsv);
   formData.append("rigor", rigor);
 
   const res = await fetch(`/api/exams/${examId}/grade-csv`, {
