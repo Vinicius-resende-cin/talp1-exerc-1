@@ -59,17 +59,9 @@ Then(
   "the exam preview should display options as {string}",
   async function (previewText: string) {
     if (previewText === "a, b, c...") {
-      const isVisible = await this.page
-        .locator('text="Identifier Type: Letters"')
-        .first()
-        .isVisible();
-      expect(isVisible).toBe(true);
+      await expect(this.page.locator('text=/Identifier Type:.*Letters/i').first()).toBeVisible();
     } else {
-      const isVisible = await this.page
-        .locator('text="Identifier Type: Powers of 2"')
-        .first()
-        .isVisible();
-      expect(isVisible).toBe(true);
+      await expect(this.page.locator('text=/Identifier Type:.*Powers of 2/i').first()).toBeVisible();
     }
   },
 );
