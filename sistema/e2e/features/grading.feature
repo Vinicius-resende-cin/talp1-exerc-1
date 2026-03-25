@@ -9,6 +9,7 @@ Feature: Exam Grading with CSV
     And I click "Grade Exam"
     Then I should see the grades table with "Bob" getting "0"
     And I should see the grades table with "Alice" getting "1"
+    And I should see the grades table with "Charlie" getting "0"
 
   Scenario: Low rigor grading by uploading CSV files
     Given I navigate to the Grading page
@@ -17,5 +18,6 @@ Feature: Exam Grading with CSV
     And I upload the student answers CSV with low rigor mock data
     And I select "low" rigor
     And I click "Grade Exam"
-    Then I should see the grades table with "Bob" getting "0.6"
+    Then I should see the grades table with "Bob" getting "0.8"
     And I should see the grades table with "Alice" getting "1"
+    And I should see the grades table with "Charlie" getting "0.4"

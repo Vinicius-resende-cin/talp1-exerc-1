@@ -31,6 +31,11 @@ router.post("/", (req, res) => {
     return res.status(400).json({ error: "alternatives are required" });
   }
 
+  const hasCorrect = alternatives.some((alt: Alternative) => alt.isCorrect);
+  if (!hasCorrect) {
+    return res.status(400).json({ error: "At least one alternative must be correct" });
+  }
+
   const newQuestion: Question = {
     id: Math.random().toString(36).substring(2, 15),
     description,
@@ -67,6 +72,13 @@ router.get("/:id", (req, res) => {
 router.put("/:id", (req, res) => {
   const { id } = req.params;
   const { description, alternatives } = req.body;
+
+  if (alternatives && Array.isArray(alternatives)) {
+    const hasCorrect = alternatives.some((alt: Alternative) => alt.isCorrect);
+    if (!hasCorrect) {
+      return res.status(400).json({ error: "At least one alternative must be correct" });
+    }
+  }
 
   const questionIndex = questions.findIndex((q) => q.id === id);
   if (questionIndex === -1) {

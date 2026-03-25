@@ -283,7 +283,7 @@ router.post("/:id/generate", (req: Request, res: Response) => {
         () => Math.random() - 0.5,
       );
 
-      let correctAnswerKey = "";
+      const correctAnswerKeys: string[] = [];
 
       shuffledAlts.forEach((alt, aIndex) => {
         let identifier = "";
@@ -294,14 +294,14 @@ router.post("/:id/generate", (req: Request, res: Response) => {
         }
 
         if (alt.isCorrect) {
-          correctAnswerKey = identifier;
+          correctAnswerKeys.push(identifier);
         }
 
         doc.fontSize(12).text(`  ${identifier}) ${alt.description}`);
       });
 
       doc.moveDown();
-      csvRows.push(`${testNum},${qIndex + 1},${correctAnswerKey}`);
+      csvRows.push(`${testNum},${qIndex + 1},"${correctAnswerKeys.join(",")}"`);
     });
 
     doc.end();

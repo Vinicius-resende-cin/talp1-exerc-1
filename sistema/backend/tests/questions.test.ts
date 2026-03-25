@@ -30,6 +30,18 @@ describe("Questions REST API", () => {
       createdQuestionId = res.body.id;
     });
 
+    it("should fail if no alternative is marked as correct", async () => {
+      const res = await request(app).post("/api/questions").send({
+        description: "A question without correct alternatives?",
+        alternatives: [
+          { description: "One", isCorrect: false },
+          { description: "Two", isCorrect: false },
+        ]
+      });
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe("At least one alternative must be correct");
+    });
+
     it("should fail if alternatives are missing", async () => {
       const res = await request(app).post("/api/questions").send({
         description: "A question without alternatives?",
@@ -72,7 +84,7 @@ describe("Questions REST API", () => {
     it("should return 404 for non-existent question", async () => {
       const res = await request(app)
         .put("/api/questions/999999999")
-        .send({ description: "Testing", alternatives: [] });
+        .send({ description: "Testing", alternatives: [{description: "A", isCorrect: true}] });
 
       expect(res.status).toBe(404);
     });
