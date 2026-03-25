@@ -73,7 +73,7 @@ Then(
   "I should see the grades table with {string} getting {string}",
   async function (studentName: string, grade: string) {
     // Wait for Results specifically to ensure API roundtrip
-    await this.page.waitForSelector(`h3:has-text("Results for Exam:")`);
+    await this.page.waitForSelector(`h3:has-text("Results for Exam Variation:")`);
 
     const rowLocator = this.page.locator(
       `tr:has(td:text-is("${studentName}"))`,

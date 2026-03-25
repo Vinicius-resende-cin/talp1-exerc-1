@@ -14,6 +14,7 @@ export interface Exam {
   title: string;
   questionIds: string[];
   identifierType: "letters" | "powers_of_2";
+  variations?: string[];
 }
 
 /**
@@ -32,8 +33,8 @@ router.post(
   ]),
   (req: Request, res: Response): any => {
     try {
-      const examId = req.params.id;
-      const exam = exams.find((e) => e.id === examId);
+      const testId = req.params.id;
+      const exam = exams.find((e) => e.variations?.includes(testId) || e.id === testId);
       if (!exam) {
         return res.status(404).json({ error: "Exam not found" });
       }
@@ -57,8 +58,15 @@ router.post(
       });
       const correctMap = new Map<string, string[]>();
       (correctParsed.data as any[]).forEach((row) => {
-        if (row.Question && row.Correct != null) {
-          const arr = row.Correct.toString()
+        const hasTestIdColumn = "Test ID" in row || "TestID" in row;
+        const rowTestId = row["Test ID"] || row.TestID;
+        if (hasTestIdColumn && rowTestId !== testId) {
+          return;
+        }
+
+        const correct = row.Correct != null ? row.Correct : row["Correct Answer"];
+        if (row.Question && correct != null) {
+          const arr = correct.toString()
             .split(",")
             .map((x: string) => x.trim())
             .filter(Boolean);
@@ -161,7 +169,7 @@ router.post(
       });
 
       res.status(200).json({
-        examId,
+        examId: exam.id,
         grades: studentGrades,
         details: studentDetails,
       });
@@ -311,6 +319,8 @@ router.post("/:id/generate", (req: Request, res: Response) => {
     const doc = new PDFDocument({ bufferPages: true });
     
     const testId = uuidv4();
+    exam.variations = exam.variations || [];
+    exam.variations.push(testId);
 
     archive.append(doc as any, { name: `Test_${testNum}.pdf` });
 

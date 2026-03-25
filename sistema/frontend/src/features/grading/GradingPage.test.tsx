@@ -26,7 +26,7 @@ describe("GradingPage", () => {
     const user = userEvent.setup();
 
     // Elements
-    const examIdInput = screen.getByLabelText(/Exam ID/i);
+    const examIdInput = screen.getByLabelText(/Exam Variation ID/i);
     const correctAnswersInput = screen.getByLabelText(/Correct Answers CSV/i);
     const studentAnswersInput = screen.getByLabelText(/Student Answers CSV/i);
     const rigorSelect = screen.getByLabelText(/Rigor/i);

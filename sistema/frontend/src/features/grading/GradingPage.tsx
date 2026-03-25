@@ -2,7 +2,7 @@ import { useState } from "react";
 import { gradeCsv } from "./api";
 
 export function GradingPage() {
-  const [examId, setExamId] = useState("");
+  const [testId, setTestId] = useState("");
   const [correctFile, setCorrectFile] = useState<File | null>(null);
   const [studentFile, setStudentFile] = useState<File | null>(null);
   const [rigor, setRigor] = useState<"high" | "low">("high");
@@ -23,7 +23,7 @@ export function GradingPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!examId || !correctFile || !studentFile) {
+    if (!testId || !correctFile || !studentFile) {
       setError("Please fill all required fields.");
       return;
     }
@@ -32,7 +32,7 @@ export function GradingPage() {
       setIsLoading(true);
       setError(null);
       setResults(null);
-      const data = await gradeCsv(examId, correctFile, studentFile, rigor);
+      const data = await gradeCsv(testId, correctFile, studentFile, rigor);
       setResults(data);
     } catch (err: any) {
       setError(err.message || "An error occurred during grading.");
@@ -51,12 +51,12 @@ export function GradingPage() {
         style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
       >
         <div>
-          <label htmlFor="examId">Exam ID </label>
+          <label htmlFor="examId">Exam Variation ID (UUID) </label>
           <input
             id="examId"
             type="text"
-            value={examId}
-            onChange={(e) => setExamId(e.target.value)}
+            value={testId}
+            onChange={(e) => setTestId(e.target.value)}
             required
             style={{ width: "100%", padding: "8px", boxSizing: "border-box" }}
           />
@@ -114,7 +114,7 @@ export function GradingPage() {
 
       {results && (
         <div style={{ marginTop: "30px" }}>
-          <h3>Results for Exam: {results.examId}</h3>
+          <h3>Results for Exam Variation: {results.examId}</h3>
           <table
             style={{
               width: "100%",
