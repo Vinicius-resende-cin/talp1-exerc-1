@@ -84,4 +84,35 @@ describe("POST /api/exams/:id/grade-csv", () => {
       Alice: 0.6 + 1.0, // Q1 = 0.6, Q2 = 1.0
     });
   });
+
+  it("should process low rigor powers_of_2 correctly with partial pontuation", async () => {
+    const exam: Exam = {
+      id: "exam-pow2",
+      title: "Power 2 Exam",
+      questionIds: ["1", "2"],
+      identifierType: "powers_of_2",
+    };
+    exams.push(exam);
+
+    // Q1: Correct = 5 (1 + 4). i.e. options 1 and 4 are correct. Total correct options = 2.
+    // Q2: Correct = 3 (1 + 2). Total correct options = 2.
+    const correctCsv = 'Question,Correct\n1,5\n2,3';
+    
+    // Alice Q1: Answer = 1 (1). She marked 1 (correct), missed 4. Incorrect marked = 0. 
+    // Partial score = (1 correct - 0 incorrect) / 2 = 0.5
+    // Alice Q2: Answer = 7 (1 + 2 + 4). She marked 1 and 2 (both correct), but marked 4 (incorrect). Total correct options = 2.
+    // Partial score = (2 correct - 1 incorrect) / 2 = 0.5
+    const studentCsv = 'Student,Question,Answer\nAlice,1,1\nAlice,2,7';
+
+    const res = await request(app)
+      .post(`/api/exams/${exam.id}/grade-csv`)
+      .field("rigor", "low")
+      .attach("correctAnswers", Buffer.from(correctCsv), "correct.csv")
+      .attach("studentAnswers", Buffer.from(studentCsv), "student.csv");
+
+    expect(res.status).toBe(200);
+    expect(res.body.grades).toEqual({
+      Alice: 0.5 + 0.5,
+    });
+  });
 });

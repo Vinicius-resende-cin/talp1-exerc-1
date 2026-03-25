@@ -101,19 +101,26 @@ router.post(
             }
           } else {
             let correctSelections = 0;
-            let correctNonSelections = 0;
+            let incorrectSelections = 0;
+            let totalCorrectOptions = 0;
             const allOptionsPow = [1, 2, 4, 8, 16];
 
             allOptionsPow.forEach((pow) => {
               const expectedHasOpt = (expectedSum & pow) === pow;
               const studentHasOpt = (studentAnsSum & pow) === pow;
 
-              if (expectedHasOpt && studentHasOpt) correctSelections++;
-              else if (!expectedHasOpt && !studentHasOpt) correctNonSelections++;
+              if (expectedHasOpt) {
+                totalCorrectOptions++;
+                if (studentHasOpt) correctSelections++;
+              } else {
+                if (studentHasOpt) incorrectSelections++;
+              }
             });
 
-            studentGrades[student] +=
-              (correctSelections + correctNonSelections) / 5;
+            if (totalCorrectOptions > 0) {
+              const partial = (correctSelections - incorrectSelections) / totalCorrectOptions;
+              studentGrades[student] += partial > 0 ? partial : 0;
+            }
           }
         } else {
           if (rigor === "high") {
