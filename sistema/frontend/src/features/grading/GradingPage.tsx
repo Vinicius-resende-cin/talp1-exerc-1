@@ -170,21 +170,71 @@ export function GradingPage() {
               >
                 <thead>
                   <tr style={{ backgroundColor: "#f2f2f2" }}>
-                    <th style={{ padding: "10px", border: "1px solid #ddd", textAlign: "left" }}>Student</th>
-                    <th style={{ padding: "10px", border: "1px solid #ddd", textAlign: "left" }}>Question</th>
-                    <th style={{ padding: "10px", border: "1px solid #ddd", textAlign: "left" }}>Expected Answer</th>
-                    <th style={{ padding: "10px", border: "1px solid #ddd", textAlign: "left" }}>Student Answer</th>
-                    <th style={{ padding: "10px", border: "1px solid #ddd", textAlign: "left" }}>Score</th>
+                    <th
+                      style={{
+                        padding: "10px",
+                        border: "1px solid #ddd",
+                        textAlign: "left",
+                      }}
+                    >
+                      Student
+                    </th>
+                    <th
+                      style={{
+                        padding: "10px",
+                        border: "1px solid #ddd",
+                        textAlign: "left",
+                      }}
+                    >
+                      Question
+                    </th>
+                    <th
+                      style={{
+                        padding: "10px",
+                        border: "1px solid #ddd",
+                        textAlign: "left",
+                      }}
+                    >
+                      Expected Answer
+                    </th>
+                    <th
+                      style={{
+                        padding: "10px",
+                        border: "1px solid #ddd",
+                        textAlign: "left",
+                      }}
+                    >
+                      Student Answer
+                    </th>
+                    <th
+                      style={{
+                        padding: "10px",
+                        border: "1px solid #ddd",
+                        textAlign: "left",
+                      }}
+                    >
+                      Score
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {results.details.map((detail, index) => (
                     <tr key={index}>
-                      <td style={{ padding: "10px", border: "1px solid #ddd" }}>{detail.student}</td>
-                      <td style={{ padding: "10px", border: "1px solid #ddd" }}>{detail.question}</td>
-                      <td style={{ padding: "10px", border: "1px solid #ddd" }}>{detail.expected}</td>
-                      <td style={{ padding: "10px", border: "1px solid #ddd" }}>{detail.answer}</td>
-                      <td style={{ padding: "10px", border: "1px solid #ddd" }}>{detail.score}</td>
+                      <td style={{ padding: "10px", border: "1px solid #ddd" }}>
+                        {detail.student}
+                      </td>
+                      <td style={{ padding: "10px", border: "1px solid #ddd" }}>
+                        {detail.question}
+                      </td>
+                      <td style={{ padding: "10px", border: "1px solid #ddd" }}>
+                        {detail.expected}
+                      </td>
+                      <td style={{ padding: "10px", border: "1px solid #ddd" }}>
+                        {detail.answer}
+                      </td>
+                      <td style={{ padding: "10px", border: "1px solid #ddd" }}>
+                        {detail.score}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

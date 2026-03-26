@@ -33,7 +33,9 @@ router.post("/", (req, res) => {
 
   const hasCorrect = alternatives.some((alt: Alternative) => alt.isCorrect);
   if (!hasCorrect) {
-    return res.status(400).json({ error: "At least one alternative must be correct" });
+    return res
+      .status(400)
+      .json({ error: "At least one alternative must be correct" });
   }
 
   const newQuestion: Question = {
@@ -76,7 +78,9 @@ router.put("/:id", (req, res) => {
   if (alternatives && Array.isArray(alternatives)) {
     const hasCorrect = alternatives.some((alt: Alternative) => alt.isCorrect);
     if (!hasCorrect) {
-      return res.status(400).json({ error: "At least one alternative must be correct" });
+      return res
+        .status(400)
+        .json({ error: "At least one alternative must be correct" });
     }
   }
 

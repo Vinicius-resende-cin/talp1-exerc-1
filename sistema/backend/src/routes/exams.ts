@@ -34,7 +34,9 @@ router.post(
   (req: Request, res: Response): any => {
     try {
       const testId = req.params.id;
-      const exam = exams.find((e) => e.variations?.includes(testId) || e.id === testId);
+      const exam = exams.find(
+        (e) => e.variations?.includes(testId) || e.id === testId,
+      );
       if (!exam) {
         return res.status(404).json({ error: "Exam not found" });
       }
@@ -64,9 +66,11 @@ router.post(
           return;
         }
 
-        const correct = row.Correct != null ? row.Correct : row["Correct Answer"];
+        const correct =
+          row.Correct != null ? row.Correct : row["Correct Answer"];
         if (row.Question && correct != null) {
-          const arr = correct.toString()
+          const arr = correct
+            .toString()
             .split(",")
             .map((x: string) => x.trim())
             .filter(Boolean);
@@ -81,7 +85,13 @@ router.post(
       const studentData = studentParsed.data as any[];
 
       const studentGrades: { [studentName: string]: number } = {};
-      const studentDetails: Array<{ student: string, question: string, expected: string, answer: string, score: number }> = [];
+      const studentDetails: Array<{
+        student: string;
+        question: string;
+        expected: string;
+        answer: string;
+        score: number;
+      }> = [];
 
       studentData.forEach((row) => {
         const student = row.Student?.trim();
@@ -130,7 +140,8 @@ router.post(
             });
 
             if (totalCorrectOptions > 0) {
-              const partial = (correctSelections - incorrectSelections) / totalCorrectOptions;
+              const partial =
+                (correctSelections - incorrectSelections) / totalCorrectOptions;
               score = partial > 0 ? partial : 0;
             }
           }
@@ -317,7 +328,7 @@ router.post("/:id/generate", (req: Request, res: Response) => {
 
   for (let testNum = 1; testNum <= count; testNum++) {
     const doc = new PDFDocument({ bufferPages: true });
-    
+
     const testId = uuidv4();
     exam.variations = exam.variations || [];
     exam.variations.push(testId);
@@ -388,10 +399,15 @@ router.post("/:id/generate", (req: Request, res: Response) => {
 
       doc.moveDown();
       if (exam.identifierType === "powers_of_2") {
-        const sum = correctAnswerKeys.reduce((acc, val) => acc + parseInt(val, 10), 0);
+        const sum = correctAnswerKeys.reduce(
+          (acc, val) => acc + parseInt(val, 10),
+          0,
+        );
         csvRows.push(`${testNum},${testId},${qIndex + 1},${sum}`);
       } else {
-        csvRows.push(`${testNum},${testId},${qIndex + 1},"${correctAnswerKeys.join(",")}"`);
+        csvRows.push(
+          `${testNum},${testId},${qIndex + 1},"${correctAnswerKeys.join(",")}"`,
+        );
       }
     });
 
