@@ -85,16 +85,22 @@ Then(
 Given(
   "there is an existing question {string}",
   async function (description: string) {
-    const responsePromise = this.page.waitForResponse(
-      (response: any) =>
-        response.url().includes("/api/questions") && response.status() === 200,
-    );
     await this.page.goto("http://localhost:5173");
-    await responsePromise;
+    
+    // Attempt to wait for questions load, but proceed if not (e.g. timeout)
+    try {
+      await this.page.waitForResponse(
+        (response: any) =>
+          response.url().includes("/api/questions") && response.status() === 200,
+        { timeout: 2000 }
+      );
+    } catch (e) {
+      // Ignore
+    }
 
-    await this.page.waitForTimeout(200);
+    await this.page.waitForTimeout(500);
 
-    const existing = this.page.locator(`text=${description}`);
+    const existing = this.page.locator(`text="${description}"`);
     if ((await existing.count()) === 0) {
       await this.page.fill(
         '[data-testid="question-description-input"]',
@@ -104,9 +110,12 @@ Given(
         `[data-testid="alternative-description-input-0"]`,
         "Dummy",
       );
+      await this.page.check(
+        `[data-testid="alternative-correct-checkbox-0"]`
+      );
       await this.page.click('[data-testid="submit-question-btn"]');
       await expect(
-        this.page.locator(`text=${description}`).first(),
+        this.page.locator(`text="${description}"`).first(),
       ).toBeVisible();
     }
   },

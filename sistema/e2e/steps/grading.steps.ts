@@ -4,12 +4,44 @@ import * as fs from "fs";
 import * as path from "path";
 
 Given("I navigate to the Grading page", async function () {
+  // Mock exams required by the backend
+  try {
+    const highReq = await fetch("http://localhost:3000/api/exams", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: "High Rigor Exam",
+        questionIds: ["Q1"],
+        identifierType: "letters",
+      })
+    });
+    const highExam = await highReq.json();
+    this.highExamId = highExam.id;
+
+    const lowReq = await fetch("http://localhost:3000/api/exams", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: "Low Rigor Exam",
+        questionIds: ["Q1"],
+        identifierType: "letters",
+      })
+    });
+    const lowExam = await lowReq.json();
+    this.lowExamId = lowExam.id;
+  } catch (e) {
+    console.error("Failed to seed exams", e);
+  }
+
   await this.page.goto("http://localhost:5173/");
   await this.page.click('[data-testid="nav-grading"]');
 });
 
 When("I fill in the exam ID {string}", async function (examId: string) {
-  await this.page.fill("input#examId", examId);
+  let actualId = examId;
+  if (examId === "HIGH-123" && this.highExamId) actualId = this.highExamId;
+  if (examId === "LOW-123" && this.lowExamId) actualId = this.lowExamId;
+  await this.page.fill("input#examId", actualId);
 });
 
 When(
@@ -31,7 +63,7 @@ When(
     if (!fs.existsSync(fixturesDir))
       fs.mkdirSync(fixturesDir, { recursive: true });
     const filePath = path.join(fixturesDir, "student_high.csv");
-    fs.writeFileSync(filePath, "Student,Question,Answer\nAlice,Q1,A\nBob,Q1,B\n");
+    fs.writeFileSync(filePath, "Student,Question,Answer\nAlice,Q1,A\nBob,Q1,\"A,B\"\nCharlie,Q1,\"B,C\"\n");
     await this.page.setInputFiles("input#studentCsv", filePath);
   },
 );
@@ -55,7 +87,7 @@ When(
     if (!fs.existsSync(fixturesDir))
       fs.mkdirSync(fixturesDir, { recursive: true });
     const filePath = path.join(fixturesDir, "student_low.csv");
-    fs.writeFileSync(filePath, "Student,Question,Answer\nAlice,Q1,A\nBob,Q1,B\n");
+    fs.writeFileSync(filePath, "Student,Question,Answer\nAlice,Q1,A\nBob,Q1,\"A,B\"\nCharlie,Q1,\"B,C\"\n");
     await this.page.setInputFiles("input#studentCsv", filePath);
   },
 );
@@ -73,11 +105,9 @@ Then(
   "I should see the grades table with {string} getting {string}",
   async function (studentName: string, grade: string) {
     // Wait for Results specifically to ensure API roundtrip
-    await this.page.waitForSelector(`h3:has-text("Results for Exam:")`);
+    await this.page.waitForSelector(`h3:has-text("Results for Exam Variation:")`);
 
-    const rowLocator = this.page.locator(
-      `tr:has(td:text-is("${studentName}"))`,
-    );
+    const rowLocator = this.page.locator(`table`).first().locator(`tr`, { hasText: studentName }).first();
     await rowLocator.waitFor({ state: "visible" });
 
     const text = await rowLocator.innerText();

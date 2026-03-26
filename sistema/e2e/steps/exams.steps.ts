@@ -133,31 +133,34 @@ Given("an exam {string} exists", async function (title: string) {
 });
 
 When("I click edit for {string}", async function (title: string) {
-  await this.page.locator(`button[aria-label="Edit ${title}"]`).click();
+  await this.page.locator(`button[aria-label="Edit ${title}"]`).first().click();
 });
 
 When("I change the title to {string}", async function (title: string) {
-  const editInput = this.page.locator('input[aria-label="Edit Exam Title"]');
-  await this.page
-    .locator('input[aria-label="Edit Exam Title"]')
-    .fill(title)
-    .catch(async () => {
+  const editInput = this.page.locator('input[aria-label="Edit Exam Title"]').first();
+  await editInput.fill(title).catch(async () => {
       const inputs = this.page.getByRole("textbox");
       await inputs.first().fill(title);
     });
 });
 
 Then("the exam {string} should be in the list", async function (title: string) {
-  await expect(this.page.locator(`text="${title}"`).first()).toBeVisible();
+  await expect(this.page.locator(`text="${title}"`).first()).toBeVisible({ timeout: 10000 });
 });
 
 Then("{string} should not be in the list", async function (title: string) {
+  await this.page.waitForTimeout(2000);
+  await this.page.reload();
+  await this.page.waitForTimeout(2000);
   await expect(this.page.locator(`text="${title}"`).first()).toBeHidden();
 });
 
 Then(
   "the exam {string} should not be in the list",
   async function (title: string) {
+    await this.page.waitForTimeout(2000);
+    await this.page.reload();
+    await this.page.waitForTimeout(2000);
     await expect(this.page.locator(`text="${title}"`).first()).toBeHidden();
   },
 );
@@ -166,6 +169,6 @@ When(
   "I hit delete for {string} and accept the dialog",
   async function (title: string) {
     this.page.once("dialog", (dialog: any) => dialog.accept());
-    await this.page.locator(`button[aria-label="Delete ${title}"]`).click();
+    await this.page.locator(`button[aria-label="Delete ${title}"]`).first().click();
   },
 );

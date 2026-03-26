@@ -2,7 +2,7 @@ import { useState } from "react";
 import { gradeCsv } from "./api";
 
 export function GradingPage() {
-  const [examId, setExamId] = useState("");
+  const [testId, setTestId] = useState("");
   const [correctFile, setCorrectFile] = useState<File | null>(null);
   const [studentFile, setStudentFile] = useState<File | null>(null);
   const [rigor, setRigor] = useState<"high" | "low">("high");
@@ -12,11 +12,18 @@ export function GradingPage() {
   const [results, setResults] = useState<{
     examId: string;
     grades: Record<string, number>;
+    details: Array<{
+      student: string;
+      question: string;
+      expected: string;
+      answer: string;
+      score: number;
+    }>;
   } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!examId || !correctFile || !studentFile) {
+    if (!testId || !correctFile || !studentFile) {
       setError("Please fill all required fields.");
       return;
     }
@@ -25,7 +32,7 @@ export function GradingPage() {
       setIsLoading(true);
       setError(null);
       setResults(null);
-      const data = await gradeCsv(examId, correctFile, studentFile, rigor);
+      const data = await gradeCsv(testId, correctFile, studentFile, rigor);
       setResults(data);
     } catch (err: any) {
       setError(err.message || "An error occurred during grading.");
@@ -44,12 +51,12 @@ export function GradingPage() {
         style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
       >
         <div>
-          <label htmlFor="examId">Exam ID </label>
+          <label htmlFor="examId">Exam Variation ID (UUID) </label>
           <input
             id="examId"
             type="text"
-            value={examId}
-            onChange={(e) => setExamId(e.target.value)}
+            value={testId}
+            onChange={(e) => setTestId(e.target.value)}
             required
             style={{ width: "100%", padding: "8px", boxSizing: "border-box" }}
           />
@@ -107,7 +114,7 @@ export function GradingPage() {
 
       {results && (
         <div style={{ marginTop: "30px" }}>
-          <h3>Results for Exam: {results.examId}</h3>
+          <h3>Results for Exam Variation: {results.examId}</h3>
           <table
             style={{
               width: "100%",
@@ -150,6 +157,40 @@ export function GradingPage() {
               ))}
             </tbody>
           </table>
+
+          {results.details && results.details.length > 0 && (
+            <div style={{ marginTop: "30px" }}>
+              <h3>Detailed Results</h3>
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  marginTop: "10px",
+                }}
+              >
+                <thead>
+                  <tr style={{ backgroundColor: "#f2f2f2" }}>
+                    <th style={{ padding: "10px", border: "1px solid #ddd", textAlign: "left" }}>Student</th>
+                    <th style={{ padding: "10px", border: "1px solid #ddd", textAlign: "left" }}>Question</th>
+                    <th style={{ padding: "10px", border: "1px solid #ddd", textAlign: "left" }}>Expected Answer</th>
+                    <th style={{ padding: "10px", border: "1px solid #ddd", textAlign: "left" }}>Student Answer</th>
+                    <th style={{ padding: "10px", border: "1px solid #ddd", textAlign: "left" }}>Score</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {results.details.map((detail, index) => (
+                    <tr key={index}>
+                      <td style={{ padding: "10px", border: "1px solid #ddd" }}>{detail.student}</td>
+                      <td style={{ padding: "10px", border: "1px solid #ddd" }}>{detail.question}</td>
+                      <td style={{ padding: "10px", border: "1px solid #ddd" }}>{detail.expected}</td>
+                      <td style={{ padding: "10px", border: "1px solid #ddd" }}>{detail.answer}</td>
+                      <td style={{ padding: "10px", border: "1px solid #ddd" }}>{detail.score}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
     </div>

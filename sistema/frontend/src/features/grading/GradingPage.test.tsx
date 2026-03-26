@@ -17,6 +17,7 @@ describe("GradingPage", () => {
     const mockGrades = {
       examId: "exam-123",
       grades: { student1: 10, student2: 8 },
+      details: [],
     };
     vi.mocked(api.gradeCsv).mockResolvedValue(mockGrades);
 
@@ -25,7 +26,7 @@ describe("GradingPage", () => {
     const user = userEvent.setup();
 
     // Elements
-    const examIdInput = screen.getByLabelText(/Exam ID/i);
+    const examIdInput = screen.getByLabelText(/Exam Variation ID/i);
     const correctAnswersInput = screen.getByLabelText(/Correct Answers CSV/i);
     const studentAnswersInput = screen.getByLabelText(/Student Answers CSV/i);
     const rigorSelect = screen.getByLabelText(/Rigor/i);

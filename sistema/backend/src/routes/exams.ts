@@ -3,6 +3,7 @@ import PDFDocument from "pdfkit";
 import archiver from "archiver";
 import multer from "multer";
 import Papa from "papaparse";
+import { v4 as uuidv4 } from "uuid";
 import { questions } from "./questions";
 
 const router = Router();
@@ -13,6 +14,7 @@ export interface Exam {
   title: string;
   questionIds: string[];
   identifierType: "letters" | "powers_of_2";
+  variations?: string[];
 }
 
 /**
@@ -31,7 +33,11 @@ router.post(
   ]),
   (req: Request, res: Response): any => {
     try {
-      const examId = req.params.id;
+      const testId = req.params.id;
+      const exam = exams.find((e) => e.variations?.includes(testId) || e.id === testId);
+      if (!exam) {
+        return res.status(404).json({ error: "Exam not found" });
+      }
       const rigor = req.body.rigor;
 
       if (rigor !== "high" && rigor !== "low") {
@@ -52,8 +58,15 @@ router.post(
       });
       const correctMap = new Map<string, string[]>();
       (correctParsed.data as any[]).forEach((row) => {
-        if (row.Question && row.Correct != null) {
-          const arr = row.Correct.toString()
+        const hasTestIdColumn = "Test ID" in row || "TestID" in row;
+        const rowTestId = row["Test ID"] || row.TestID;
+        if (hasTestIdColumn && rowTestId !== testId) {
+          return;
+        }
+
+        const correct = row.Correct != null ? row.Correct : row["Correct Answer"];
+        if (row.Question && correct != null) {
+          const arr = correct.toString()
             .split(",")
             .map((x: string) => x.trim())
             .filter(Boolean);
@@ -68,6 +81,7 @@ router.post(
       const studentData = studentParsed.data as any[];
 
       const studentGrades: { [studentName: string]: number } = {};
+      const studentDetails: Array<{ student: string, question: string, expected: string, answer: string, score: number }> = [];
 
       studentData.forEach((row) => {
         const student = row.Student?.trim();
@@ -87,33 +101,77 @@ router.post(
         const correctArr = correctMap.get(question);
         if (!correctArr) return;
 
-        if (rigor === "high") {
-          const sortCorrect = [...correctArr].sort().join(",");
-          const sortStudent = [...answerArr].sort().join(",");
-          if (sortCorrect === sortStudent) {
-            studentGrades[student] += 1;
+        let score = 0;
+
+        if (exam.identifierType === "powers_of_2") {
+          const expectedSum = parseInt(correctArr[0], 10) || 0;
+          const studentAnsSum = parseInt(answerRaw, 10) || 0;
+
+          if (rigor === "high") {
+            if (expectedSum === studentAnsSum) {
+              score = 1;
+            }
+          } else {
+            let correctSelections = 0;
+            let incorrectSelections = 0;
+            let totalCorrectOptions = 0;
+            const allOptionsPow = [1, 2, 4, 8, 16];
+
+            allOptionsPow.forEach((pow) => {
+              const expectedHasOpt = (expectedSum & pow) === pow;
+              const studentHasOpt = (studentAnsSum & pow) === pow;
+
+              if (expectedHasOpt) {
+                totalCorrectOptions++;
+                if (studentHasOpt) correctSelections++;
+              } else {
+                if (studentHasOpt) incorrectSelections++;
+              }
+            });
+
+            if (totalCorrectOptions > 0) {
+              const partial = (correctSelections - incorrectSelections) / totalCorrectOptions;
+              score = partial > 0 ? partial : 0;
+            }
           }
         } else {
-          let correctSelections = 0;
-          let correctNonSelections = 0;
-          const allOptions = ["A", "B", "C", "D", "E"];
+          if (rigor === "high") {
+            const sortCorrect = [...correctArr].sort().join(",");
+            const sortStudent = [...answerArr].sort().join(",");
+            if (sortCorrect === sortStudent) {
+              score = 1;
+            }
+          } else {
+            let correctSelections = 0;
+            let correctNonSelections = 0;
+            const allOptions = ["A", "B", "C", "D", "E"];
 
-          allOptions.forEach((opt) => {
-            const isCorrect = correctArr.includes(opt);
-            const isSelected = answerArr.includes(opt);
+            allOptions.forEach((opt) => {
+              const isCorrect = correctArr.includes(opt);
+              const isSelected = answerArr.includes(opt);
 
-            if (isCorrect && isSelected) correctSelections++;
-            else if (!isCorrect && !isSelected) correctNonSelections++;
-          });
+              if (isCorrect && isSelected) correctSelections++;
+              else if (!isCorrect && !isSelected) correctNonSelections++;
+            });
 
-          studentGrades[student] +=
-            (correctSelections + correctNonSelections) / 5;
+            score = (correctSelections + correctNonSelections) / 5;
+          }
         }
+
+        studentGrades[student] += score;
+        studentDetails.push({
+          student,
+          question,
+          expected: correctArr.join(","),
+          answer: answerRaw,
+          score,
+        });
       });
 
       res.status(200).json({
-        examId,
+        examId: exam.id,
         grades: studentGrades,
+        details: studentDetails,
       });
     } catch (err) {
       console.error(err);
@@ -255,16 +313,34 @@ router.post("/:id/generate", (req: Request, res: Response) => {
   const archive = archiver("zip", { zlib: { level: 9 } });
   archive.pipe(res);
 
-  let csvRows = ["Test Number,Question,Correct Answer"];
+  let csvRows = ["Test Number,Test ID,Question,Correct Answer"];
 
   for (let testNum = 1; testNum <= count; testNum++) {
-    const doc = new PDFDocument();
+    const doc = new PDFDocument({ bufferPages: true });
+    
+    const testId = uuidv4();
+    exam.variations = exam.variations || [];
+    exam.variations.push(testId);
+
     archive.append(doc as any, { name: `Test_${testNum}.pdf` });
 
     // Shuffle questions
     const shuffledQuestionIds = [...exam.questionIds].sort(
       () => Math.random() - 0.5,
     );
+
+    // Footer with Test ID
+    const addFooter = () => {
+      const range = doc.bufferedPageRange();
+      for (let i = range.start; i < range.start + range.count; i++) {
+        doc.switchToPage(i);
+        doc.fontSize(10).text(`Test ID: ${testId}`, 0, doc.page.height - 50, {
+          align: 'center',
+          width: doc.page.width,
+          lineBreak: false,
+        });
+      }
+    };
 
     doc
       .fontSize(16)
@@ -301,9 +377,15 @@ router.post("/:id/generate", (req: Request, res: Response) => {
       });
 
       doc.moveDown();
-      csvRows.push(`${testNum},${qIndex + 1},"${correctAnswerKeys.join(",")}"`);
+      if (exam.identifierType === "powers_of_2") {
+        const sum = correctAnswerKeys.reduce((acc, val) => acc + parseInt(val, 10), 0);
+        csvRows.push(`${testNum},${testId},${qIndex + 1},${sum}`);
+      } else {
+        csvRows.push(`${testNum},${testId},${qIndex + 1},"${correctAnswerKeys.join(",")}"`);
+      }
     });
 
+    addFooter();
     doc.end();
   }
 
