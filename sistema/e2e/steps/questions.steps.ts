@@ -86,13 +86,14 @@ Given(
   "there is an existing question {string}",
   async function (description: string) {
     await this.page.goto("http://localhost:5173");
-    
+
     // Attempt to wait for questions load, but proceed if not (e.g. timeout)
     try {
       await this.page.waitForResponse(
         (response: any) =>
-          response.url().includes("/api/questions") && response.status() === 200,
-        { timeout: 2000 }
+          response.url().includes("/api/questions") &&
+          response.status() === 200,
+        { timeout: 2000 },
       );
     } catch (e) {
       // Ignore
@@ -110,9 +111,7 @@ Given(
         `[data-testid="alternative-description-input-0"]`,
         "Dummy",
       );
-      await this.page.check(
-        `[data-testid="alternative-correct-checkbox-0"]`
-      );
+      await this.page.check(`[data-testid="alternative-correct-checkbox-0"]`);
       await this.page.click('[data-testid="submit-question-btn"]');
       await expect(
         this.page.locator(`text="${description}"`).first(),

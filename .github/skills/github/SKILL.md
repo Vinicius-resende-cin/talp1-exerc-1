@@ -51,6 +51,7 @@ gh branch create <branch_name> --base <base_branch>
 ```
 
 ## Branching Strategy
+
 - Use branches named `<type>/<short-description>` (e.g., `feat/add-login`, `fix/auth-bug`).
   - For features, use `feat/<short-description>`.
   - For hotfixes, use `hotfix/<short-description>`.
@@ -64,6 +65,7 @@ gh branch create <branch_name> --base <base_branch>
 - Never use rebasing for public branches to avoid rewriting history. Use merge commits or squash merges instead.
 
 ## Pull Request Handling
+
 - Always create a PR for any change that is not trivial (e.g., typo fixes can be direct commits).
 - Use descriptive titles and detailed descriptions for PRs to provide context for reviewers.
   - Title format: `<type>: <short_description>` (e.g., `feat: add user authentication`).

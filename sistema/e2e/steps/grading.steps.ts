@@ -13,7 +13,7 @@ Given("I navigate to the Grading page", async function () {
         title: "High Rigor Exam",
         questionIds: ["Q1"],
         identifierType: "letters",
-      })
+      }),
     });
     const highExam = await highReq.json();
     this.highExamId = highExam.id;
@@ -25,7 +25,7 @@ Given("I navigate to the Grading page", async function () {
         title: "Low Rigor Exam",
         questionIds: ["Q1"],
         identifierType: "letters",
-      })
+      }),
     });
     const lowExam = await lowReq.json();
     this.lowExamId = lowExam.id;
@@ -63,7 +63,10 @@ When(
     if (!fs.existsSync(fixturesDir))
       fs.mkdirSync(fixturesDir, { recursive: true });
     const filePath = path.join(fixturesDir, "student_high.csv");
-    fs.writeFileSync(filePath, "Student,Question,Answer\nAlice,Q1,A\nBob,Q1,\"A,B\"\nCharlie,Q1,\"B,C\"\n");
+    fs.writeFileSync(
+      filePath,
+      'Student,Question,Answer\nAlice,Q1,A\nBob,Q1,"A,B"\nCharlie,Q1,"B,C"\n',
+    );
     await this.page.setInputFiles("input#studentCsv", filePath);
   },
 );
@@ -87,7 +90,10 @@ When(
     if (!fs.existsSync(fixturesDir))
       fs.mkdirSync(fixturesDir, { recursive: true });
     const filePath = path.join(fixturesDir, "student_low.csv");
-    fs.writeFileSync(filePath, "Student,Question,Answer\nAlice,Q1,A\nBob,Q1,\"A,B\"\nCharlie,Q1,\"B,C\"\n");
+    fs.writeFileSync(
+      filePath,
+      'Student,Question,Answer\nAlice,Q1,A\nBob,Q1,"A,B"\nCharlie,Q1,"B,C"\n',
+    );
     await this.page.setInputFiles("input#studentCsv", filePath);
   },
 );
@@ -105,9 +111,15 @@ Then(
   "I should see the grades table with {string} getting {string}",
   async function (studentName: string, grade: string) {
     // Wait for Results specifically to ensure API roundtrip
-    await this.page.waitForSelector(`h3:has-text("Results for Exam Variation:")`);
+    await this.page.waitForSelector(
+      `h3:has-text("Results for Exam Variation:")`,
+    );
 
-    const rowLocator = this.page.locator(`table`).first().locator(`tr`, { hasText: studentName }).first();
+    const rowLocator = this.page
+      .locator(`table`)
+      .first()
+      .locator(`tr`, { hasText: studentName })
+      .first();
     await rowLocator.waitFor({ state: "visible" });
 
     const text = await rowLocator.innerText();

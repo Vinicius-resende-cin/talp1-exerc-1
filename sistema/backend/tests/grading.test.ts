@@ -96,13 +96,13 @@ describe("POST /api/exams/:id/grade-csv", () => {
 
     // Q1: Correct = 5 (1 + 4). i.e. options 1 and 4 are correct. Total correct options = 2.
     // Q2: Correct = 3 (1 + 2). Total correct options = 2.
-    const correctCsv = 'Question,Correct\n1,5\n2,3';
-    
-    // Alice Q1: Answer = 1 (1). She marked 1 (correct), missed 4. Incorrect marked = 0. 
+    const correctCsv = "Question,Correct\n1,5\n2,3";
+
+    // Alice Q1: Answer = 1 (1). She marked 1 (correct), missed 4. Incorrect marked = 0.
     // Partial score = (1 correct - 0 incorrect) / 2 = 0.5
     // Alice Q2: Answer = 7 (1 + 2 + 4). She marked 1 and 2 (both correct), but marked 4 (incorrect). Total correct options = 2.
     // Partial score = (2 correct - 1 incorrect) / 2 = 0.5
-    const studentCsv = 'Student,Question,Answer\nAlice,1,1\nAlice,2,7';
+    const studentCsv = "Student,Question,Answer\nAlice,1,1\nAlice,2,7";
 
     const res = await request(app)
       .post(`/api/exams/${exam.id}/grade-csv`)

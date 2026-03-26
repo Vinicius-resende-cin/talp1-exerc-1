@@ -59,9 +59,13 @@ Then(
   "the exam preview should display options as {string}",
   async function (previewText: string) {
     if (previewText === "a, b, c...") {
-      await expect(this.page.locator('text=/Identifier Type:.*Letters/i').first()).toBeVisible();
+      await expect(
+        this.page.locator("text=/Identifier Type:.*Letters/i").first(),
+      ).toBeVisible();
     } else {
-      await expect(this.page.locator('text=/Identifier Type:.*Powers of 2/i').first()).toBeVisible();
+      await expect(
+        this.page.locator("text=/Identifier Type:.*Powers of 2/i").first(),
+      ).toBeVisible();
     }
   },
 );
@@ -137,15 +141,19 @@ When("I click edit for {string}", async function (title: string) {
 });
 
 When("I change the title to {string}", async function (title: string) {
-  const editInput = this.page.locator('input[aria-label="Edit Exam Title"]').first();
+  const editInput = this.page
+    .locator('input[aria-label="Edit Exam Title"]')
+    .first();
   await editInput.fill(title).catch(async () => {
-      const inputs = this.page.getByRole("textbox");
-      await inputs.first().fill(title);
-    });
+    const inputs = this.page.getByRole("textbox");
+    await inputs.first().fill(title);
+  });
 });
 
 Then("the exam {string} should be in the list", async function (title: string) {
-  await expect(this.page.locator(`text="${title}"`).first()).toBeVisible({ timeout: 10000 });
+  await expect(this.page.locator(`text="${title}"`).first()).toBeVisible({
+    timeout: 10000,
+  });
 });
 
 Then("{string} should not be in the list", async function (title: string) {
@@ -169,6 +177,9 @@ When(
   "I hit delete for {string} and accept the dialog",
   async function (title: string) {
     this.page.once("dialog", (dialog: any) => dialog.accept());
-    await this.page.locator(`button[aria-label="Delete ${title}"]`).first().click();
+    await this.page
+      .locator(`button[aria-label="Delete ${title}"]`)
+      .first()
+      .click();
   },
 );

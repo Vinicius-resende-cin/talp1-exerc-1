@@ -8,6 +8,7 @@ This skill guides the creation of a well-organized project structure that serves
 ## Best Practices
 
 When setting up the initial project architecture, consider the following best practices:
+
 - **Modularity**: Organize code into logical modules or components that encapsulate specific functionality. This promotes separation of concerns and makes it easier to manage and scale the codebase.
 - **Consistency**: Establish consistent naming conventions and directory structures to improve readability and ease of navigation. This helps developers quickly understand where to find specific files and how to structure new ones.
 - **Configuration Management**: Set up essential configuration files (e.g., package.json, .env, webpack.config.js) to manage dependencies, environment variables, and build processes. Define clear commands for setting up and running the project. This ensures that the project can be easily set up and run by other developers.
@@ -18,6 +19,7 @@ When setting up the initial project architecture, consider the following best pr
 By following these best practices, you can create a project structure that is organized, maintainable, and conducive to efficient development and collaboration.
 
 ## Project Structure Example
+
 Here is an example of a project structure for a typical web application, which can be adapted based on the specific needs of your project:
 
 ```
