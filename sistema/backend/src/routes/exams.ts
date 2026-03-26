@@ -334,13 +334,23 @@ router.post("/:id/generate", (req: Request, res: Response) => {
       const range = doc.bufferedPageRange();
       for (let i = range.start; i < range.start + range.count; i++) {
         doc.switchToPage(i);
-        doc.fontSize(10).text(`Test ID: ${testId}`, 0, doc.page.height - 50, {
-          align: 'center',
+        const oldBottomMargin = doc.page.margins.bottom;
+        doc.page.margins.bottom = 0;
+        doc.fontSize(10).text(`Test ID: ${testId}`, 0, doc.page.height - 40, {
+          align: "center",
           width: doc.page.width,
           lineBreak: false,
         });
+        doc.page.margins.bottom = oldBottomMargin;
       }
     };
+
+    // Header on the first page
+    doc.fontSize(12);
+    doc.text("Class Name: ________________________");
+    doc.text("Professor Name: ________________________");
+    doc.text("Date: ________________________");
+    doc.moveDown(2);
 
     doc
       .fontSize(16)
